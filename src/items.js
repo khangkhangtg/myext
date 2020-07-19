@@ -23,17 +23,22 @@ export class ItemList {
 	}
 
 	getIdByHostname (hostname) {
-		const li = this.list;
-		return li.map(el => el.hostname).indexOf(hostname);
+		// const li = this.list;
+		console.log('get id by hostname ' + hostname);
+		return this.list.map(el => el.hostname).indexOf(hostname);
 	}
 
 	getItemByHostName (hostname) {
 		const li = this.list;
-		return li[this.getIdByHostname(hostname)];
+		const id = this.getIdByHostname(hostname);
+		return id === -1 ? null : li[id];
 	}
 
 	updateTimerByHostname (hostname, time) {
-		const id = this.getIdByHostName(hostname);
+		console.log('update timer by ' + hostname + ' ' + time);
+		console.log(this);
+		const id = this.list.map(el => el.hostname).indexOf(hostname);
+		console.log(id);
 		this.list[id].timer += time;
 	}
 }

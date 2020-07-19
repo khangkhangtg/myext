@@ -14,11 +14,11 @@ export function updateStorage (data) {
 	browser.storage.local.set({data});
 }
 
-export async function getStorage () {
-	console.log('Get storage');
+export function getStorage () {
+	// console.log('Get storage');
 	let gettingStorage = browser.storage.local.get();
-	let data = await gettingStorage.then(onGot, onError);
-	console.log(data);
+	let data = gettingStorage.then(onGot, onError);
+	// console.log(data);
 	return data;
 }
 

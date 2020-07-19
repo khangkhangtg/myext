@@ -20,12 +20,13 @@ function isExisted (hn) {
 }
 
 function updateTimer (hn, ti) {
+	if (hn === undefined) return;
 	if (isExisted(hn)) {
-		// console.log('update timer 1  ' + hn + ' ' + ti);
+		console.log('update timer 1  ' + hn + ' ' + ti);
 		arrItem.updateTimerByHostname(hn, ti);
 	} 
 	else {
-		// console.log('update timer 2  ' + hn + ' ' + ti);
+		console.log('update timer 2  ' + hn + ' ' + ti);
 		arrItem.addNewItem(hn, ti);
 	}
 	updateStorage(arrItem);
@@ -35,17 +36,20 @@ function updateTimer (hn, ti) {
 
 async function test (ti) {
 	console.log('test ' + ti/1000);
+	const data = await getStorage();
 	setTimeout(() => {
-		Timer.tabTimers.forEach((el, id) => {
-			if(el) console.log(id + ' ' + el.getTimer());
-		});
-		const data = getStorage();
+		// Timer.tabTimers.forEach((el, id) => {
+		// 	if(el) console.log(id + ' ' + el.getTimer());
+		// });
+		console.log(tabHostname);
+		console.log('data');
 		console.log(data);
 	}, ti);
 }
 
 ////////// Tab controller /////
 function updateTab(tabId, hn) {
+	console.log(tabId + ' ' + hn);
 	updateTimer(tabHostname[tabId], Timer.tabTimers[tabId].getTimer());
 	tabHostname[tabId] = hn;
 }
@@ -56,9 +60,9 @@ function init() {
 	gettingTabs.then((tabs) => {
 		for (let tab of tabs) {
 			const hostname = getHostname(tab.url);
+			Timer.tabTimers[tab.id] = Timer.addTimer();
 			if(hostname){
 				tabHostname[tab.id] = hostname;
-				Timer.tabTimers[tab.id] = Timer.addTimer();
 				Timer.tabTimers[tab.id].start();
 				updateTab(tab.id, hostname);
 			}
@@ -76,22 +80,20 @@ test(10000);
 browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 	if (changeInfo.url) {
 		const hostname = getHostname(changeInfo.url);
-		console.log('Change ' + hostname + ' of tab ' + tabId);
 
 		if (! hostname) return; 
-		if(isExisted(hostname)) {
-			console.log('Add new hostname');
-			// arrItem.addNewItem(new Item(hostname, 0));
-			// updateStorage(arrItem);
-		}
-
-		// updateTab(tabId, hostname);
+		
+		const ti = Timer.tabTimers[tabId].getTimer();
+		
+		// updateTimer(hostname, ti);
+		updateTab(tabId, hostname);
 
 		// reset Tab Timer and start 
 		Timer.tabTimers[tabId].reset();
 		Timer.tabTimers[tabId].start();
 
-		test(2000);
+		console.log('Change ' + hostname + ' of tab ' + tabId + ' ' + ti);
+		test(5000);
 	}
 });
 
@@ -99,14 +101,14 @@ browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 browser.tabs.onCreated.addListener((tab) => {
 	console.log('Create new tab ' + tab.id + ' and add a timer');
 	Timer.tabTimers[tab.id] = Timer.addTimer();
-	test(2000);
+	test(5000);
 });
 
 // add event 'onRemoved' for closing the tab
 browser.tabs.onRemoved.addListener((tabId, removeInfo) => {
 	Timer.tabTimers[tabId].pause();
 	console.log('Close ' + tabId +', using time: ' + Timer.tabTimers[tabId].getTimer());
-	// updateTab(tabId, null);
+	updateTab(tabId, tabHostname[tabId]);
 	Timer.removeTimer(tabId);
-	test(2000);
+	test(5000);
 });
